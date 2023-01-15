@@ -1,4 +1,3 @@
-import sys
 import argparse
 import depth_estimator
 import pothole_detector
@@ -37,8 +36,6 @@ def create_report(predictions: dict, output_file: str) -> None:
     pass
 
 def make_predictions(video_file: bytes):
-    images = segment_video_to_images(video_file)
-
     """Retrieve list of dictionaries of pothole images and their timestamp
     Example of dictionary unique_potholes = 
     [
