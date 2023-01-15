@@ -70,6 +70,12 @@ def make_predictions(video_file: bytes):
     return predictions
 
 def run_program(input_file: str, output_file: str):
+    """Main function for handling the args and running the program
+
+    Args:
+        input_file (str): Path to input MP4 video file.
+        output_file (str): Name of the output files. (output.csv & output.mp4)
+    """
 
     # Retrieve video file
     video_file = import_video(input_file)
@@ -84,7 +90,7 @@ def main():
     """Main function for Arg parsing"""
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-i", "--input", required=True, help="Name of the input MP4 video file.")
-    argParser.add_argument("-o", "--output", required=False, help="Name of the output file.")
+    argParser.add_argument("-o", "--output", required=False, help="Name of the output files.")
 
     args = argParser.parse_args()
 
