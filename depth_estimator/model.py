@@ -12,33 +12,36 @@ import matplotlib.pyplot as plt
 tf.random.set_seed(123)
 
 #Downloading the dataset
+if not os.path.exists("my_data.pkl"):
+    annotation_folder = "/dataset/"
+    if not os.path.exists(os.path.abspath(".") + annotation_folder):
+        annotation_zip = tf.keras.utils.get_file(
+            "train.tar.gz",
+            cache_subdir=os.path.abspath("."),
+            origin="http://diode-dataset.s3.amazonaws.com/train.tar.gz",
+            extract=True, 
+        )
 
-annotation_folder = "/dataset/"
-if not os.path.exists(os.path.abspath(".") + annotation_folder):
-    annotation_zip = tf.keras.utils.get_file(
-        "train.tar.gz",
-        cache_subdir=os.path.abspath("."),
-        origin="http://diode-dataset.s3.amazonaws.com/train.tar.gz",
-        extract=True, 
-    )
 
+    #Preparing the dataset
+    path = "train/outdoor"
 
-#Preparing the dataset
-path = "train/outdoor"
+    filelist = []
 
-filelist = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            filelist.append(os.path.join(root, file))
 
-for root, dirs, files in os.walk(path):
-    for file in files:
-        filelist.append(os.path.join(root, file))
-
-filelist.sort()
-data = {
-    "image": [x for x in filelist if x.endswith(".png")],
-    "depth": [x for x in filelist if x.endswith("_depth.npy")],
-    "mask": [x for x in filelist if x.endswith("_depth_mask.npy")],
-}
-df = pd.DataFrame(data)
+    filelist.sort()
+    data = {
+        "image": [x for x in filelist if x.endswith(".png")],
+        "depth": [x for x in filelist if x.endswith("_depth.npy")],
+        "mask": [x for x in filelist if x.endswith("_depth_mask.npy")],
+    }
+    df = pd.DataFrame(data)
+    df.to_pickle("my_data.pkl")
+else:
+    df = pd.read_pickle("my_data.pkl")
 
 df = df.sample(frac=1, random_state=42)
 
@@ -100,7 +103,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         depth_map = np.load(depth_map).squeeze()
 
         mask = np.load(mask)
-        mask = mask > 0
+        mask= np.where(mask>0, mask, 1.0e-10)
 
         max_depth = min(300, np.percentile(depth_map, 99))
         depth_map = np.clip(depth_map, self.min_depth, max_depth)
