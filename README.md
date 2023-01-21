@@ -10,7 +10,16 @@ To run the program:
 
 `$ python3 main.py -i <input_video.mp4_file> -o <output_path>`
 
-Output should be a name without a suffix (like mp4 or csv, since the output will be two files)
+Output should be a name without a suffix. For example if output_path is set as "file", the outputs will be file.mp4 and file.csv in the working directory.
+```
+pothole-classifier/
+  - file.mp4
+  - file.csv
+  - result_images/
+    - pothole_image_1.png
+    - ...
+    - pothole_image_n.png
+```
 
 
 
