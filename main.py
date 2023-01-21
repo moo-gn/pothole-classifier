@@ -41,7 +41,7 @@ def create_report(predictions: dict, output_file: str) -> None:
         output_file (str): the path to which to save the report .csv file to.
     """
     # TODO
-    output_data = pd.DataFrame(predictions, columns=["id", "timestamp", "severity", "image_path", "arclength(cm)"])
+    output_data = pd.DataFrame(predictions, columns=["id", "timestamp", "severity", "image_path", "arclength(cm)", "class"])
 
     output_data.to_csv(f"{output_file}.csv")
 
@@ -78,14 +78,22 @@ def make_predictions(video_file: cv2.VideoCapture, output_file: str):
     for track_id, pothole in unique_potholes.items():
         # Classify severity of a cropped plothole image and add it to predictions list
         severity, arc_length = manager.depth_estimator.classify(pothole["image"])
-
+        rounded_severity = round(severity, 4)
         predictions["id"].append(track_id)
         predictions["timestamp"].append(convert_milliseconds_to_timestamp(pothole["timestamp"]))
-        predictions["severity"].append(round(severity, 4))
+        predictions["severity"].append(rounded_severity)
         predictions["image_path"].append(f"result_images/pothole_image_{track_id}.png")
         predictions["arclength(cm)"].append(round(arc_length * ARC_LENGTH_TO_CM_RATIO, 2))
+        
         pothole["image"].save(predictions["image_path"][-1])
-
+        cls = ""
+        if rounded_severity < 0.26:
+            cls = "Low"
+        elif rounded_severity < 0.41:
+            cls = "Medium"
+        else:
+            cls = "High"
+        predictions["class"].append(cls)
     return predictions
 
 def run_program(input_file: str, output_file: str):
