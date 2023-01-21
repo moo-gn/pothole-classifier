@@ -71,7 +71,8 @@ The architecture of our Plothole Classifier Pipeline
 
 ## Features
 Example of the output.csv file which contains information regarding all potholes in the video and their severity classification.
-![image](https://user-images.githubusercontent.com/48159946/213862004-b659335f-4726-4665-83bd-c78c23b264f9.png)
+![image](https://user-images.githubusercontent.com/48159946/213862004-b659335f-4726-4665-83bd-c78c23b264f9.png)![pothole_image_6](https://user-images.githubusercontent.com/48159946/213862679-d6c468cf-bd39-42cd-9467-9bc074644d0a.png)
+
 
 Notice that the image_path column points to the cropped pothole images that were saved to the result_images/ directory. This is so that you could review the images that were classified in the final report.
 
