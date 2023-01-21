@@ -38,20 +38,19 @@ def make_predictions(video_file: cv2.VideoCapture, output_file: str):
     """Retrieve list of dictionaries of pothole images and their timestamp
     Example of dictionary unique_potholes = 
     [
+        id:
         {
-            "image": PIL.Image,
-            "timestamp": "00:00"
+            "image": np.ndarray
+            "timestamp": float
+            "size": int
         }, 
+        id:
         {
-            "image": PIL.Image, 
-            "timestamp": "00:01"
+            "image": np.ndarray, 
+            "timestamp": float
+            "size": int (pixels width x height)
         }
     ]
-
-    Questions to address [IMPORTANT]:
-    1. What format should the timestamp be?
-
-    2. What should the interval be? 1 second? 1 frame? Or is it determined by tracking method?
     """
     unique_potholes = pothole_detector.detect_and_track(video_file, output_file)
 
