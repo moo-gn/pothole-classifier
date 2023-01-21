@@ -23,8 +23,6 @@ NOTE: In order to run the program with no dependency conflicts, make sure to cre
 
 # Getting Started
 
-This project is a collection of [boilerplate](http://whatis.techtarget.com/definition/boilerplate) (template) files with resumed guidelines for `README`, `CONTRIBUTING` and `CONTRIBUTORS` documentation. It also includes a basic `ISSUE_TEMPLATE` and `PULL_REQUEST_TEMPLATE` which are now [allowed by GitHub](https://github.com/blog/2111-issue-and-pull-request-templates). All templates are filled under `.github/` folder. This `README` itself is a fork of the `README` [template](.github/README.md).
-
 ## Usage
 
 ```$ python3 main.py -i <input_video.mp4_file> -o <output_path>```
