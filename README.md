@@ -2,7 +2,7 @@
 A pothole detection and classification system. Input a .mp4 video and get a .csv report of all potholes in the video with their respective timestamps and severity classification. The program automates the creation of pothole reports to ease the process of addressing road conditions.
 
 
-<img src="project-logo.png" align="left" width="192px" height="192px"/>
+<img src="https://cdn.discordapp.com/attachments/1010369978714837005/1066303874543140944/retro_japanese_70s_style_with_text_moo-gn-4.png" align="left" width="192px" height="192px"/>
 <img align="left" width="0" height="192px" hspace="10"/>
 
 [![Under Development](https://img.shields.io/badge/under-development-orange.svg)](https://github.com/cezaraugusto/github-template-guidelines) [![Public Domain](https://img.shields.io/badge/public-domain-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/) [![Travis](https://img.shields.io/travis/cezaraugusto/github-template-guidelines.svg)](http://github.com/cezaraugusto/github-template-guidelines)
@@ -60,7 +60,9 @@ The architecture of our Plothole Classifier Pipeline
 
 ## Features
 Example of the output.csv file which contains information regarding all potholes in the video and their severity classification.
-![image](https://user-images.githubusercontent.com/48159946/213862004-b659335f-4726-4665-83bd-c78c23b264f9.png)![pothole_image_6](https://user-images.githubusercontent.com/48159946/213862679-d6c468cf-bd39-42cd-9467-9bc074644d0a.png)
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/48159946/213862004-b659335f-4726-4665-83bd-c78c23b264f9.png">
+</p>
 
 
 Notice that the image_path column points to the cropped pothole images that were saved to the result_images/ directory. This is so that you could review the images that were classified in the final report.
