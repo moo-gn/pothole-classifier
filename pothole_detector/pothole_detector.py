@@ -69,7 +69,9 @@ class PotholeDetector(object):
 
                     try:
                         detections = self.detect(frame, encoder, model, session, width, height)
-                    except: break
+                    except Exception as err:
+                        print(err)
+                        break
 
                     # Compute time
                     # timestamp = self.calculate_time(frame_no)
