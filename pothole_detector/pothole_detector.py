@@ -18,15 +18,15 @@ import numpy as np
 import pandas as pd
 
 class PotholeDetector(object):
-    def __init__(self) -> None:
+    def __init__(self, show=True) -> None:
         self.NUM_CLASS = read_class_names("model_data/pothole.names")
         self.key_list = list(self.NUM_CLASS.keys()) 
         self.val_list = list(self.NUM_CLASS.values())
-        self.input_size = 100
+        self.input_size = 400
         self.track_class_filter = []
         self.iou_threshold= 0.1
         self.score_threshold= 0.3
-        self.show = True
+        self.show = show
         self.print = True
         self.unique_tracks = {}
 
@@ -91,13 +91,19 @@ class PotholeDetector(object):
 
                 cv2.destroyAllWindows()
 
-        for id, track in self.unique_tracks.items():
-            print("image size", track["size"])
-            # track["image"].save(f"result_images/pothole-{id}.png")
-
         return self.unique_tracks
 
-    def visualize(self, original_frame, tracked_bboxes, timestamp) -> Image:
+    def visualize(self, original_frame: np.ndarray, tracked_bboxes, timestamp: int) -> Image:
+        """Visualizes the detection
+
+        Args:
+            original_frame (ndarray): The current frame
+            tracked_bboxes: the boxes tracked on the frame
+            timestamp (_type_): Current timestamp to be displayed
+
+        Returns:
+            Image: Image drawn 
+        """
         image = draw_bbox(original_frame, tracked_bboxes, CLASSES=YOLO_COCO_CLASSES, tracking=True)
         
         image = cv2.putText(image, "Time: {:.1f} milliseconds".format(timestamp), (0, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
@@ -133,7 +139,20 @@ class PotholeDetector(object):
                     
         return tracked_bboxes
 
-    def detect(self, frame: np.ndarray, encoder, model, session: tf.compat.v1.Session, width, height):
+    def detect(self, frame: np.ndarray, encoder:np.ndarray[np.float32], model, session: tf.compat.v1.Session, width: int, height: int) -> list:
+        """Detects and predicts potholes in a given frame
+
+        Args:
+            frame (np.ndarray): the current frame.
+            encoder (np.ndarray[np.float32]): the encoder for deep_sort tracking
+            model: Yolov5 model
+            session (tf.compat.v1.Session): Tensorflow Session for inference
+            width (int): width of the frame
+            height (int): height of the frame
+
+        Returns:
+            list[Detection]: list of detections from the frame.
+        """
 
         image_data = np.expand_dims(frame, axis=0)
         image_tensor = model.get_tensor_by_name('image_tensor:0')
@@ -163,7 +182,13 @@ class PotholeDetector(object):
 
         return detections
 
-    def initialize_model(self) -> Tracker: 
+    def initialize_model(self) -> tuple:
+        """Initializes the model, tracker, and encoder
+
+        Returns:
+            tuple: model, tracker, encoder
+        """
+
         # Definition of the parameters
         max_cosine_distance = 0.7
         nn_budget = None

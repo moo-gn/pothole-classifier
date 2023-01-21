@@ -7,8 +7,13 @@ import cv2
 from common import convert_milliseconds_to_timestamp
 
 DEFAULT_OUTPUT = "output"
-pothole_detector = PotholeDetector()
-depth_estimator = DepthEstimator()
+
+class Manager(object):
+    def __init__(self) -> None:
+        self.pothole_detector = None
+        self.depth_estimator = None
+
+manager = Manager()
 
 def import_video(input_file: str) -> cv2.VideoCapture:
     """Import video file from string path.
@@ -57,7 +62,7 @@ def make_predictions(video_file: cv2.VideoCapture, output_file: str):
         }
     ]
     """
-    unique_potholes = pothole_detector.detect_and_track(video_file, output_file + ".mp4")
+    unique_potholes = manager.pothole_detector.detect_and_track(video_file, output_file + ".mp4")
 
     # Just to check output, remove
 
@@ -70,17 +75,14 @@ def make_predictions(video_file: cv2.VideoCapture, output_file: str):
 
     for track_id, pothole in unique_potholes.items():
         # Classify severity of a cropped plothole image and add it to predictions list
-        severity = depth_estimator.classify(pothole["image"])
+        severity = manager.depth_estimator.classify(pothole["image"])
 
         predictions["id"].append(track_id)
         predictions["timestamp"].append(convert_milliseconds_to_timestamp(pothole["timestamp"]))
-        predictions["severity"].append(severity)
+        predictions["severity"].append(round(severity, 4))
         predictions["image_path"].append(f"result_images/pothole_image_{track_id}.png")
 
         pothole["image"].save(predictions["image_path"][-1])
-
-    # Normalize severity
-    predictions["severity"] = [float(i)/sum(predictions["severity"]) for i in predictions["severity"]]
 
     return predictions
 
@@ -106,8 +108,12 @@ def main():
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-i", "--input", required=True, help="Name of the input MP4 video file.")
     argParser.add_argument("-o", "--output", required=False, help="Name of the output files. Do not put a suffix like .mp4 or .csv.")
+    argParser.add_argument("-q", "--quiet", required=False, action="store_true", help="Hides the real-time detection screen.")
 
     args = argParser.parse_args()
+    
+    manager.pothole_detector = PotholeDetector(show=not args.quiet)
+    manager.depth_estimator = DepthEstimator()
 
     run_program(args.input, args.output if args.output else DEFAULT_OUTPUT)
     
