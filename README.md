@@ -61,7 +61,7 @@ The architecture of our Plothole Classifier Pipeline
 ## Features
 Example of the output.csv file which contains information regarding all potholes in the video and their severity classification.
 <p align="center">
-  <img width="537" alt="image" src="https://user-images.githubusercontent.com/48159946/213865383-d189eef8-e19e-4f5b-a692-1612f88d6e25.png">
+  <img width="537" alt="image" src="https://cdn.discordapp.com/attachments/893029017186361365/1066332698840404049/Screenshot_2023-01-21_at_7.25.20_AM.png">
 </p>
 
 
