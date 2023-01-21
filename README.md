@@ -81,3 +81,11 @@ The arclength was calculated with the assumption of 0.125cm/px for archlength.
 > Detection infra
 
 * https://github.com/anushkadhiman/ObjectTracking-DeepSORT-YOLOv3-TF2
+
+> DIODE  depth dataset
+
+* https://diode-dataset.org/
+
+> PotHole-600 depth dataset
+
+* https://sites.google.com/view/pothole-600/dataset
