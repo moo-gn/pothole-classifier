@@ -14,11 +14,12 @@ tf.random.set_seed(123)
 # hyperparameters
 HEIGHT = 256
 WIDTH = 256
-LR = 0.0002
+LR = 0.0002/10
 EPOCHS = 30
 BATCH_SIZE = 32
 VAL_SPLIT = 0.8
-fine_tune_at = 8
+fine_tune_at = 9
+finetuneepochs = 10
 
 
 #load pretrained
@@ -332,11 +333,11 @@ validation_loader = DataGenerator(
 )
 model.fit(
     train_loader,
-    epochs=EPOCHS +EPOCHS,
+    epochs=EPOCHS + finetuneepochs,
     initial_epoch = EPOCHS,
     steps_per_epoch=val_num/BATCH_SIZE,
     validation_data=validation_loader,
     validation_steps= int((len(df.index) - val_num)/BATCH_SIZE)
 )
 
-model.save('finetunedmodel/')
+model.save('10efinetunedmodel/')
