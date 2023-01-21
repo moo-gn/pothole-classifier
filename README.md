@@ -27,3 +27,6 @@ options:
                         Name of the output files. Do not put a suffix like .mp4 or .csv.
   -q, --quiet           Hides the real-time detection screen.
   ```
+
+The architecture of our Plothole Classifier Pipeline
+![Architecture Diagram](https://user-images.githubusercontent.com/48159946/213861748-0570330b-428e-4d0a-9c8e-6d44639102d2.png)
