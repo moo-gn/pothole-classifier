@@ -3,3 +3,4 @@ pothole_detector/__pycache__/
 yolov3/__pycache__/
 deep_sort/__pycache__/
 .DS_store
+potenv
