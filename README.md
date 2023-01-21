@@ -75,35 +75,15 @@ Example of the output.csv file which contains information regarding all potholes
 
 Notice that the image_path column points to the cropped pothole images that were saved to the result_images/ directory. This is so that you could review the images that were classified in the final report.
 
-## Useful Resources :thumbsup:
+## References
 
+> DeepSort
+* https://arxiv.org/abs/1703.07402
 
+> Yolov5
 
-> References for starting a Project
+* https://ultralytics.com/yolov5
 
-* [Helping people contribute to your Project](https://help.github.com/articles/helping-people-contribute-to-your-project/)
-* [Am I Ready to Open Source it?](https://gist.github.com/PurpleBooth/6f1ba788bf70fb501439#file-am-i-ready-to-open-source-this-md)
+> Detection infra
 
-> `README` References
-
-* [How To Write A Readme](http://jfhbrook.github.io/2011/11/09/readmes.html)
-* [How to Write a Great Readme](https://robots.thoughtbot.com/how-to-write-a-great-readme)
-* [Eugene Yokota - StackOverflow Answer](http://stackoverflow.com/a/2304870)
-
-> `CONTRIBUTING` References
-
-* [Setting Guidelines for Repository Contributors](https://help.github.com/articles/setting-guidelines-for-repository-contributors/)
-* [Contributor Covenant](http://contributor-covenant.org/)
-
-> `CHANGELOG` References
-
-> This boilerplate intentionally did not provide any `CHANGELOG` file as example, since [this tool](https://github.com/skywinder/github-changelog-generator) could make it automatically, fulfilling the file's objective. If you still want to keep it handwritten, to keep you (and your project) sane, I'd recommend you to follow the references below:
-
-* [Semantic Versioning 2.0.0](http://semver.org/)
-* [Keep a Changelog](http://keepachangelog.com/)
-
-> `ISSUE_TEMPLATE` and `PULL_REQUEST_TEMPLATE` References
-
-* [Creating an Issue Template for your repository](https://help.github.com/articles/creating-an-issue-template-for-your-repository/)
-* [Creating a Pull Request Template for your repository](https://help.github.com/articles/creating-a-pull-request-template-for-your-repository/)
-* [Awesome GitHub Templates](https://github.com/devspace/awesome-github-templates)
+* https://github.com/anushkadhiman/ObjectTracking-DeepSORT-YOLOv3-TF2
