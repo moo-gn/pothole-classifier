@@ -62,7 +62,22 @@ options:
   -q, --quiet           Hides the real-time detection screen.
   ```
 
+## The Architecture
+
+The architecture of our Plothole Classifier Pipeline
+![Architecture Diagram](https://user-images.githubusercontent.com/48159946/213861748-0570330b-428e-4d0a-9c8e-6d44639102d2.png)
+
+
+
+## Features
+Example of the output.csv file which contains information regarding all potholes in the video and their severity classification.
+![image](https://user-images.githubusercontent.com/48159946/213862004-b659335f-4726-4665-83bd-c78c23b264f9.png)
+
+Notice that the image_path column points to the cropped pothole images that were saved to the result_images/ directory. This is so that you could review the images that were classified in the final report.
+
 ## Useful Resources :thumbsup:
+
+
 
 > References for starting a Project
 
@@ -92,30 +107,3 @@ options:
 * [Creating an Issue Template for your repository](https://help.github.com/articles/creating-an-issue-template-for-your-repository/)
 * [Creating a Pull Request Template for your repository](https://help.github.com/articles/creating-a-pull-request-template-for-your-repository/)
 * [Awesome GitHub Templates](https://github.com/devspace/awesome-github-templates)
-
-> `CONTRIBUTORS` References
-
-* [All Contributors](https://github.com/kentcdodds/all-contributors/)
-* [All Contributors (CLI)](https://github.com/jfmengels/all-contributors-cli)
-
-## Contributors
-
-<!-- Contributors START
-Cezar_Augusto cezaraugusto http://cezaraugusto.net doc example prReview
-Nathalia_Bruno nathaliabruno http://nathaliabruno.com doc prReview
-Billie_Thompson PurpleBooth http://purplebooth.co.uk example
-Contributors END -->
-
-<!-- Contributors table START -->
-| [![Cezar Augusto](https://avatars.githubusercontent.com/cezaraugusto?s=100)<br /><sub>Cezar Augusto</sub>](http://cezaraugusto.net)<br />[📖](git@github.com:cezaraugusto/You-Dont-Know-JS/commits?author=cezaraugusto) 💡 👀 | [![Nathalia Bruno](https://avatars.githubusercontent.com/nathaliabruno?s=100)<br /><sub>Nathalia Bruno</sub>](http://nathaliabruno.com)<br />[📖](git@github.com:cezaraugusto/You-Dont-Know-JS/commits?author=nathaliabruno) 👀 | [![Billie Thompson](https://avatars.githubusercontent.com/PurpleBooth?s=100)<br /><sub>Billie Thompson</sub>](http://purplebooth.co.uk)<br />💡 |
-| :---: | :---: | :---: |
-<!-- Contributors table END -->
-
-This project follows the [all-contributors](https://github.com/kentcdodds/all-contributors) specification.
-Contributions of any kind welcome!
-
-## License
-[![CC0](https://i.creativecommons.org/p/zero/1.0/88x31.png)](https://creativecommons.org/publicdomain/zero/1.0/)
-
-To the extent possible under law, [Cezar Augusto](http://cezaraugusto.net) has waived all copyright and related or neighboring rights to this work.
-
