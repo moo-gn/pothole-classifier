@@ -12,19 +12,19 @@ import matplotlib.pyplot as plt
 tf.random.set_seed(123)
 
 #Downloading the dataset
-if not os.path.exists("my_data.pkl"):
-    annotation_folder = "/dataset/"
-    if not os.path.exists(os.path.abspath(".") + annotation_folder):
-        annotation_zip = tf.keras.utils.get_file(
-            "train.tar.gz",
-            cache_subdir=os.path.abspath("."),
-            origin="http://diode-dataset.s3.amazonaws.com/train.tar.gz",
-            extract=True, 
-        )
+annotation_folder = "/dataset/"
+if not os.path.exists(os.path.abspath(".") + annotation_folder):
+    annotation_zip = tf.keras.utils.get_file(
+        "train.tar.gz",
+        cache_subdir=os.path.abspath("."),
+        origin="http://diode-dataset.s3.amazonaws.com/train.tar.gz",
+        extract=True,
+    )
 
 
-    #Preparing the dataset
-    path = "train/outdoor"
+# Preparing the dataset
+if os.path.exists("indoors_data.pkl"):
+    path = "train/indoors"
 
     filelist = []
 
@@ -39,9 +39,9 @@ if not os.path.exists("my_data.pkl"):
         "mask": [x for x in filelist if x.endswith("_depth_mask.npy")],
     }
     df = pd.DataFrame(data)
-    df.to_pickle("my_data.pkl")
+    df.to_pickle("indoors_data.pkl")
 else:
-    df = pd.read_pickle("my_data.pkl")
+    df = pd.read_pickle("indoors_data.pkl")
 
 df = df.sample(frac=1, random_state=42)
 
@@ -51,6 +51,7 @@ WIDTH = 256
 LR = 0.0002
 EPOCHS = 30
 BATCH_SIZE = 32
+VAL_SPLIT = 0.8
 
 
 #data pipeline
@@ -103,9 +104,10 @@ class DataGenerator(tf.keras.utils.Sequence):
         depth_map = np.load(depth_map).squeeze()
 
         mask = np.load(mask)
-        mask= np.where(mask>0, mask, 1.0e-10)
+        mask = mask > 0
 
         max_depth = min(300, np.percentile(depth_map, 99))
+        max_depth = np.where(max_depth>0, max_depth, 1.0e-10)
         depth_map = np.clip(depth_map, self.min_depth, max_depth)
         depth_map = np.log(depth_map, where=mask)
 
@@ -131,51 +133,6 @@ class DataGenerator(tf.keras.utils.Sequence):
             )
 
         return x, y
-
-#Visualizing samples
-def visualize_depth_map(samples, test=False, model=None):
-    input, target = samples
-    cmap = plt.cm.jet
-    cmap.set_bad(color="black")
-
-    if test:
-        pred = model.predict(input)
-        fig, ax = plt.subplots(6, 3, figsize=(50, 50))
-        for i in range(6):
-            ax[i, 0].imshow((input[i].squeeze()))
-            ax[i, 1].imshow((target[i].squeeze()), cmap=cmap)
-            ax[i, 2].imshow((pred[i].squeeze()), cmap=cmap)
-
-    else:
-        fig, ax = plt.subplots(6, 2, figsize=(50, 50))
-        for i in range(6):
-            ax[i, 0].imshow((input[i].squeeze()))
-            ax[i, 1].imshow((target[i].squeeze()), cmap=cmap)
-
-
-visualize_samples = next(
-    iter(DataGenerator(data=df, batch_size=6, dim=(HEIGHT, WIDTH)))
-)
-visualize_depth_map(visualize_samples)
-
-#3D point cloud visualization
-depth_vis = np.flipud(visualize_samples[1][1].squeeze())  # target
-img_vis = np.flipud(visualize_samples[0][1].squeeze())  # input
-
-fig = plt.figure(figsize=(15, 10))
-ax = plt.axes(projection="3d")
-
-STEP = 3
-for x in range(0, img_vis.shape[0], STEP):
-    for y in range(0, img_vis.shape[1], STEP):
-        ax.scatter(
-            [depth_vis[x, y]] * 3,
-            [y] * 3,
-            [x] * 3,
-            c=tuple(img_vis[x, y, :3] / 255),
-            s=3,
-        )
-    ax.view_init(45, 135)
 
 #the model
 class DownscaleBlock(layers.Layer):
@@ -363,38 +320,19 @@ cross_entropy = tf.keras.losses.SparseCategoricalCrossentropy(
 )
 # Compile the model
 model.compile(optimizer, loss=cross_entropy)
-
+val_num = int(len(df.index)*VAL_SPLIT)
 train_loader = DataGenerator(
-    data=df[:260].reset_index(drop="true"), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
+    data=df[:val_num].reset_index(drop="true"), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
 )
 validation_loader = DataGenerator(
-    data=df[260:].reset_index(drop="true"), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
+    data=df[val_num:].reset_index(drop="true"), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
 )
 model.fit(
     train_loader,
     epochs=EPOCHS,
+    steps_per_epoch=val_num/BATCH_SIZE,
     validation_data=validation_loader,
+    validation_steps= int((len(df.index) - val_num)/BATCH_SIZE)
 )
 
-model.save('model/')
-
-
-#Visualizing model output
-
-test_loader = next(
-    iter(
-        DataGenerator(
-            data=df[265:].reset_index(drop="true"), batch_size=6, dim=(HEIGHT, WIDTH)
-        )
-    )
-)
-visualize_depth_map(test_loader, test=True, model=model)
-
-test_loader = next(
-    iter(
-        DataGenerator(
-            data=df[300:].reset_index(drop="true"), batch_size=6, dim=(HEIGHT, WIDTH)
-        )
-    )
-)
-visualize_depth_map(test_loader, test=True, model=model)
+model.save('indoormodel/')

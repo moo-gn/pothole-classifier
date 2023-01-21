@@ -3,3 +3,5 @@
 /val/
 train.tar.gz
 val.tar.gz
+my_data.pkl
+train/

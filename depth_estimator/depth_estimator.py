@@ -6,12 +6,12 @@ class DepthEstimator(object):
     def __init__(self) -> None:
         custom_objects = {'BilinearUpSampling2D': BilinearUpSampling2D, 'depth_loss_function': None}
         print('Loading model...')
-        self.model = tf.keras.models.load_model("model/", custom_objects=custom_objects, compile=False)
+        self.model = tf.keras.models.load_model("indoormodel/", custom_objects=custom_objects, compile=False)
         print('Successfully loaded model...')
         pass
 
     def classify(self, image: Image) -> str:
-        image = np.array(image)
+        image = np.asarray(image)
         inputs = load_images([image])
         outputs = predict(self.model, inputs)
         return outputs
