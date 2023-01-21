@@ -23,7 +23,7 @@ class DepthEstimator(object):
         depth_map = predict(self.model, input)
         input = np.array(image)
         mask, arclength = create_edge_mask(input)
-        return self.compute_severity(depth_map, mask, arclength)
+        return self.compute_severity(depth_map, mask, arclength), arclength
 
     def compute_severity(self, depth_array: np.ndarray, mask, arclength) -> float:
         # Multiply the mask with the depth_array
