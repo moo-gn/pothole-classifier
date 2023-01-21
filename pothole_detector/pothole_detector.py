@@ -3,7 +3,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import cv2
 import numpy as np
 import tensorflow as tf
-from yolov3.utils import Load_Yolo_model, image_preprocess, postprocess_boxes, nms, draw_bbox, read_class_names
+from yolov3.utils import image_preprocess, postprocess_boxes, nms, draw_bbox, read_class_names
 from yolov3.configs import *
 import time
 from PIL import Image
@@ -13,32 +13,47 @@ from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from deep_sort import generate_detections as gdet
 
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+
 class PotholeDetector(object):
     def __init__(self) -> None:
-        self.NUM_CLASS = read_class_names(YOLO_COCO_CLASSES)
+        self.NUM_CLASS = read_class_names("model_data/pothole.names")
         self.key_list = list(self.NUM_CLASS.keys()) 
         self.val_list = list(self.NUM_CLASS.values())
-        self.input_size = 416
-        self.yolo = Load_Yolo_model()
+        self.input_size = 100
         self.track_class_filter = []
         self.iou_threshold= 0.1
         self.score_threshold= 0.3
         self.show = True
-        self.print = False
+        self.print = True
+        self.unique_tracks = {}
 
     def detect_and_track(self, video_file: cv2.VideoCapture, output_file: str) -> list:
         """Detect and track video file for unique potholes.
 
         Args:
-            video_file (bytes): Input video file.
+            video_file (v2.VideoCapture): Input video file object.
+            output_file (str): path to the output file.
 
         Returns:
-            list: list of dictionaries of the pothole image and timestamp.
+            list: list of dictionaries of the pothole image and their timestamp in milliseconds.
+
+            Format of the dictionaries: 
+            
+            tracking_id:
+            {
+                "image": np.ndarray
+                "timestamp": float (in milliseconds)
+                "size": int in pixels (calculated from width x height)
+            }
         """
 
-        tracker, encoder = self.initialize_model()
-        
-        times, times_2 = [], []
+        tracker, encoder, model = self.initialize_model()
+
+        # To keep track of timestamps
+        frame_no = 0
 
         # by default VideoCapture returns float instead of int
         width = int(video_file.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -46,67 +61,50 @@ class PotholeDetector(object):
         fps = int(video_file.get(cv2.CAP_PROP_FPS))
         codec = cv2.VideoWriter_fourcc(*'XVID')
         out = cv2.VideoWriter(output_file, codec, fps, (width, height)) # output_file must be .mp4
+        with model.as_default():
+            with tf.compat.v1.Session(graph=model) as session:
+                while True:
+                    # Read the next frame from the video
+                    _, frame = video_file.read()
 
-        while True:
-            # Read the next frame from the video
-            _, frame = video_file.read()
+                    try:
+                        detections = self.detect(frame, encoder, model, session, width, height)
+                    except: break
 
-            try:
-                original_frame, image_data = self.preprocess(frame)
-            except: break
+                    # Compute time
+                    # timestamp = self.calculate_time(frame_no)
+                    timestamp = video_file.get(cv2.CAP_PROP_POS_MSEC)
+                    frame_no += 1
 
-            t1 = time.time()
-            if YOLO_FRAMEWORK == "tf":
-                pred_bbox = self.yolo.predict(image_data)
-            
-            t2 = time.time()
+                    tracked_bboxes = self.track(tracker, detections, frame, timestamp)
 
-            detections = self.detect(encoder, original_frame, pred_bbox)
+                    # Draw detection on frame
+                    image = self.visualize(frame, tracked_bboxes, timestamp)
 
-            tracked_bboxes = self.track(tracker, detections)
+                    if output_file != '': out.write(image)
+                    if self.show:
+                        cv2.imshow('output', image)
+                    
+                        if cv2.waitKey(25) & 0xFF == ord("q"):
+                            cv2.destroyAllWindows()
+                            break
 
-            # Compute time
-            self.calculate_time(t1, t2, times, times_2)
+                cv2.destroyAllWindows()
 
-            # draw detection on frame
-            image = self.visualize(original_frame, tracked_bboxes, fps)
+        for id, track in self.unique_tracks.items():
+            print("image size", track["size"])
+            # track["image"].save(f"result_images/pothole-{id}.png")
 
-            if output_file != '': out.write(image)
-            if self.show:
-                cv2.imshow('output', image)
-                
-                if cv2.waitKey(25) & 0xFF == ord("q"):
-                    cv2.destroyAllWindows()
-                    break
-                
-        cv2.destroyAllWindows()
+        return self.unique_tracks
 
-    def calculate_time(self, t1, t2, times, times_2):
-
-        t3 = time.time()
-        times.append(t2-t1)
-        times_2.append(t3-t1)
-        
-        times = times[-20:]
-        times_2 = times_2[-20:]
-
-        ms = sum(times)/len(times)*1000
-        fps = 1000 / ms
-        fps2 = 1000 / (sum(times_2)/len(times_2)*1000)
-
-        if self.print:
-            print("Time: {:.2f}ms, Detection FPS: {:.1f}, total FPS: {:.1f}".format(ms, fps, fps2))
-
-        return fps, fps2
- 
-    def visualize(self, original_frame, tracked_bboxes, fps) -> Image:
+    def visualize(self, original_frame, tracked_bboxes, timestamp) -> Image:
         image = draw_bbox(original_frame, tracked_bboxes, CLASSES=YOLO_COCO_CLASSES, tracking=True)
         
-        image = cv2.putText(image, "Time: {:.1f} FPS".format(fps), (0, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
+        image = cv2.putText(image, "Time: {:.1f} milliseconds".format(timestamp), (0, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
 
         return image
 
-    def track(self, tracker, detections):
+    def track(self, tracker, detections, frame, timestamp):
         # Pass detections to the deepsort object and obtain the track information.
         tracker.predict()
         tracker.update(detections)
@@ -116,35 +114,52 @@ class PotholeDetector(object):
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 5:
                 continue 
-            bbox = track.to_tlbr() # Get the corrected/predicted bounding box
-            class_name = track.get_class() #Get the class name of particular object
+            bbox = track.to_tlbr() # Get the corrected/predicted bounding box `(min x, min y, max x, max y)
+            class_name = "Pothole" #Get the class name of particular object
             tracking_id = track.track_id # Get the ID for the particular track
             index = self.key_list[self.val_list.index(class_name)] # Get predicted object index by object name
             tracked_bboxes.append(bbox.tolist() + [tracking_id, index]) # Structure data, that we could use it with our draw_bbox function
-            print(track)
+
+            curr_size = self.get_image_size(bbox)
+            abs_size = abs(750*750 - curr_size)
+
+            if tracking_id not in self.unique_tracks.keys():
+                self.unique_tracks[tracking_id] = {"timestamp":timestamp, "image": self.crop_image_from_bbox(bbox, frame), "size": abs_size}
+            else:
+                # If smaller size, we take it 
+                if self.unique_tracks[tracking_id]["size"] > abs_size:
+                    self.unique_tracks[tracking_id]["size"] = abs_size
+                    self.unique_tracks[tracking_id]["image"] = self.crop_image_from_bbox(bbox, frame)
+                    
         return tracked_bboxes
 
-    def detect(self, encoder, original_frame, pred_bbox):
-        pred_bbox = [tf.reshape(x, (-1, tf.shape(x)[-1])) for x in pred_bbox]
-        pred_bbox = tf.concat(pred_bbox, axis=0)
+    def detect(self, frame: np.ndarray, encoder, model, session: tf.compat.v1.Session, width, height):
 
-        bboxes = postprocess_boxes(pred_bbox, original_frame, self.input_size, self.score_threshold)
-        bboxes = nms(bboxes, self.iou_threshold, method='nms')
+        image_data = np.expand_dims(frame, axis=0)
+        image_tensor = model.get_tensor_by_name('image_tensor:0')
+        boxes = model.get_tensor_by_name('detection_boxes:0')
+        scores = model.get_tensor_by_name('detection_scores:0')
 
-        # extract bboxes to boxes (x, y, width, height), scores and names
-        boxes, scores, names = [], [], []
-        for bbox in bboxes:
-            if len(self.track_class_filter) !=0 and self.NUM_CLASS[int(bbox[5])] in self.track_class_filter or len(self.track_class_filter) == 0:
-                boxes.append([bbox[0].astype(int), bbox[1].astype(int), bbox[2].astype(int)-bbox[0].astype(int), bbox[3].astype(int)-bbox[1].astype(int)])
-                scores.append(bbox[4])
-                names.append(self.NUM_CLASS[int(bbox[5])])
+        (boxes, scores) = session.run(
+            [boxes, scores],
+            feed_dict={image_tensor: image_data})
 
-        # Obtain all the detections for the given frame.
-        boxes = np.array(boxes) 
-        names = np.array(names)
-        scores = np.array(scores)
-        features = np.array(encoder(original_frame, boxes))
-        detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature in zip(boxes, scores, names, features)]
+        # Boxes formatted for deepsorted
+        pred_boxes = []
+        for box, score in zip(boxes[0], scores[0]):
+            # Score thershold
+            if score < self.score_threshold:
+                continue
+            x1, y1, w, h = int(box[1] * width), int(box[0] * height), int(box[3] * width - box[1] * width), int(box[2] * height - box[0] * height)
+            bbox = [x1, y1, w, h]
+
+            pred_boxes.append(bbox)
+
+        processed_frame, _ = self.preprocess(frame)
+
+        features = np.array(encoder(processed_frame, pred_boxes))
+
+        detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature in zip(pred_boxes, scores[0], ["Pothole" * len(features)], features)]
 
         return detections
 
@@ -158,7 +173,16 @@ class PotholeDetector(object):
         encoder = gdet.create_box_encoder(model_filename, batch_size=1)
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         tracker = Tracker(metric)
-        return tracker, encoder
+
+        # Open model
+        with tf.compat.v1.gfile.GFile("model/saved_model.pb", 'rb') as fid:
+            graph_def = tf.compat.v1.GraphDef()
+            graph_def.ParseFromString(fid.read())
+
+        with tf.Graph().as_default() as model:
+            tf.import_graph_def(graph_def, name="")
+
+        return tracker, encoder, model
 
     def preprocess(self, frame) -> np.ndarray:
         original_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -166,3 +190,15 @@ class PotholeDetector(object):
         image_data = image_preprocess(np.copy(original_frame), [self.input_size, self.input_size])
         image_data = image_data[np.newaxis, ...].astype(np.float32)
         return original_frame, image_data
+
+    def get_image_size(self, bbox):
+        bbox_list = bbox.tolist()
+        x1, y1, x2, y2 = [int(b) for b in bbox_list]
+        return (x2 - x1) * (y2 - y1)
+
+    def crop_image_from_bbox(self, bbox, frame):
+        x1, y1, x2, y2 = bbox.tolist()
+        image = Image.fromarray(frame)
+        cropped = image.crop((x1, y1, x2, y2))
+        np_cropped = np.asarray(cropped)
+        return np_cropped

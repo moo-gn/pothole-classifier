@@ -1,24 +1,23 @@
 import argparse
 import depth_estimator
-import pothole_detector
+from pothole_detector.pothole_detector import PotholeDetector
 import pandas as pd
+import cv2
 
 DEFAULT_OUTPUT = "output"
+pothole_detector = PotholeDetector()
 
-def import_video(input_file: str) -> bytes:
+def import_video(input_file: str) -> cv2.VideoCapture:
     """Import video file from string path.
 
     Args:
         input_file (str): string path to the file.
 
     Returns:
-        bytes: the video file.
-
-    Questions to consider:
-    1. Should the video file be bytes, or a different type? @zuair
+        cv2.VideoCapture: the video file.
     """
-    # TODO
-    pass
+    video_file = cv2.VideoCapture(input_file)
+    return video_file
 
 def segment_video_to_images(video_file: bytes) -> dict:
     # TODO: do not prioritize
@@ -35,7 +34,7 @@ def create_report(predictions: dict, output_file: str) -> None:
     # TODO
     pass
 
-def make_predictions(video_file: bytes):
+def make_predictions(video_file: cv2.VideoCapture, output_file: str):
     """Retrieve list of dictionaries of pothole images and their timestamp
     Example of dictionary unique_potholes = 
     [
@@ -54,7 +53,10 @@ def make_predictions(video_file: bytes):
 
     2. What should the interval be? 1 second? 1 frame? Or is it determined by tracking method?
     """
-    unique_potholes = pothole_detector.detect_and_track(video_file)
+    unique_potholes = pothole_detector.detect_and_track(video_file, output_file)
+
+    # Just to check output, remove
+    print(unique_potholes)
 
     predictions = []
 
@@ -81,7 +83,7 @@ def run_program(input_file: str, output_file: str):
     video_file = import_video(input_file)
 
     # Handle prediction logic
-    predictions = make_predictions(video_file)
+    predictions = make_predictions(video_file, output_file)
 
     # Join the data to create and save a report
     pothole_report = create_report(predictions, output_file)

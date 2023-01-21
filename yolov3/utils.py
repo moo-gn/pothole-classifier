@@ -115,7 +115,8 @@ def draw_bbox(image, bboxes, CLASSES=YOLO_COCO_CLASSES, show_label=True, show_co
     num_classes = len(NUM_CLASS)
     image_h, image_w, _ = image.shape
     hsv_tuples = [(1.0 * x / num_classes, 1., 1.) for x in range(num_classes)]
-    #print("hsv_tuples", hsv_tuples)
+    class_ind = 0
+    # print("hsv_tuples", hsv_tuples)
     colors = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
     colors = list(map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)), colors))
 
@@ -126,7 +127,7 @@ def draw_bbox(image, bboxes, CLASSES=YOLO_COCO_CLASSES, show_label=True, show_co
     for i, bbox in enumerate(bboxes):
         coor = np.array(bbox[:4], dtype=np.int32)
         score = bbox[4]
-        class_ind = int(bbox[5])
+        # class_ind = int(bbox[5]) - 1
         bbox_color = rectangle_colors if rectangle_colors != '' else colors[class_ind]
         bbox_thick = int(0.6 * (image_h + image_w) / 1000)
         if bbox_thick < 1: bbox_thick = 1
