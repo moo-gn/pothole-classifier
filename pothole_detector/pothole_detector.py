@@ -141,7 +141,7 @@ class PotholeDetector(object):
                     
         return tracked_bboxes
 
-    def detect(self, frame: np.ndarray, encoder:np.ndarray[np.float32], model, session: tf.compat.v1.Session, width: int, height: int) -> list:
+    def detect(self, frame, encoder, model, session: tf.compat.v1.Session, width: int, height: int) -> list:
         """Detects and predicts potholes in a given frame
 
         Args:
