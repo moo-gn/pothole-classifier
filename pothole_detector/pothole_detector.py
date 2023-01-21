@@ -44,7 +44,7 @@ class PotholeDetector(object):
             
             tracking_id:
             {
-                "image": np.ndarray
+                "image": PIL.Image
                 "timestamp": float (in milliseconds)
                 "size": int in pixels (calculated from width x height)
             }
@@ -200,5 +200,4 @@ class PotholeDetector(object):
         x1, y1, x2, y2 = bbox.tolist()
         image = Image.fromarray(frame)
         cropped = image.crop((x1, y1, x2, y2))
-        np_cropped = np.asarray(cropped)
-        return np_cropped
+        return cropped

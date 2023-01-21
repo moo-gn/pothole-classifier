@@ -1,0 +1,12 @@
+,id,timestamp,severity,image_path
+0,5,00:00:00,0.1891762282220941,result_images/pothole_image_5.png
+1,6,00:00:01,0.1265896415913281,result_images/pothole_image_6.png
+2,11,00:00:01,0.001136726911615873,result_images/pothole_image_11.png
+3,17,00:00:02,0.001136726911615873,result_images/pothole_image_17.png
+4,20,00:00:03,0.001136726911615873,result_images/pothole_image_20.png
+5,25,00:00:04,0.13012859225103166,result_images/pothole_image_25.png
+6,26,00:00:05,0.001136726911615873,result_images/pothole_image_26.png
+7,27,00:00:05,0.15718802176030852,result_images/pothole_image_27.png
+8,29,00:00:06,0.16074029343850757,result_images/pothole_image_29.png
+9,34,00:00:07,0.23049358817865068,result_images/pothole_image_34.png
+10,48,00:00:11,0.001136726911615873,result_images/pothole_image_48.png

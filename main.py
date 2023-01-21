@@ -1,11 +1,14 @@
 import argparse
-import depth_estimator
+from depth_estimator.depth_estimator import DepthEstimator
 from pothole_detector.pothole_detector import PotholeDetector
 import pandas as pd
+import numpy as np
 import cv2
+from common import convert_milliseconds_to_timestamp
 
 DEFAULT_OUTPUT = "output"
 pothole_detector = PotholeDetector()
+depth_estimator = DepthEstimator()
 
 def import_video(input_file: str) -> cv2.VideoCapture:
     """Import video file from string path.
@@ -32,7 +35,9 @@ def create_report(predictions: dict, output_file: str) -> None:
         output_file (str): the path to which to save the report .csv file to.
     """
     # TODO
-    pass
+    output_data = pd.DataFrame(predictions, columns=["id", "timestamp", "severity", "image_path"])
+
+    output_data.to_csv(f"{output_file}.csv")
 
 def make_predictions(video_file: cv2.VideoCapture, output_file: str):
     """Retrieve list of dictionaries of pothole images and their timestamp
@@ -40,33 +45,42 @@ def make_predictions(video_file: cv2.VideoCapture, output_file: str):
     [
         id:
         {
-            "image": np.ndarray
+            "image": PIL.Image
             "timestamp": float
             "size": int
         }, 
         id:
         {
-            "image": np.ndarray, 
+            "image": PIL.Image 
             "timestamp": float
             "size": int (pixels width x height)
         }
     ]
     """
-    unique_potholes = pothole_detector.detect_and_track(video_file, output_file)
+    unique_potholes = pothole_detector.detect_and_track(video_file, output_file + ".mp4")
 
     # Just to check output, remove
-    print(unique_potholes)
 
-    predictions = []
+    predictions = {
+        "id": [],
+        "timestamp": [],
+        "severity": [],
+        "image_path": [] 
+    }
 
-    for pothole in unique_potholes:
+    for track_id, pothole in unique_potholes.items():
         # Classify severity of a cropped plothole image and add it to predictions list
-        severity = depth_estimator.classify(pothole)
-        predictions.append({
-            "image": pothole["image"],
-            "severity": severity,
-            "timestamp": pothole["timestamp"]
-        })
+        severity = depth_estimator.classify(pothole["image"])
+
+        predictions["id"].append(track_id)
+        predictions["timestamp"].append(convert_milliseconds_to_timestamp(pothole["timestamp"]))
+        predictions["severity"].append(severity)
+        predictions["image_path"].append(f"result_images/pothole_image_{track_id}.png")
+
+        pothole["image"].save(predictions["image_path"][-1])
+
+    # Normalize severity
+    predictions["severity"] = [float(i)/sum(predictions["severity"]) for i in predictions["severity"]]
 
     return predictions
 
@@ -91,7 +105,7 @@ def main():
     """Main function for Arg parsing"""
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-i", "--input", required=True, help="Name of the input MP4 video file.")
-    argParser.add_argument("-o", "--output", required=False, help="Name of the output files.")
+    argParser.add_argument("-o", "--output", required=False, help="Name of the output files. Do not put a suffix like .mp4 or .csv.")
 
     args = argParser.parse_args()
 
