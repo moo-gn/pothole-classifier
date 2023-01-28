@@ -38,6 +38,7 @@ pothole-classifier/
     - pothole_image_n.png
 ```
 
+
 Full usage details
 ```
 usage: main.py [-h] -i INPUT [-o OUTPUT] [-q]
