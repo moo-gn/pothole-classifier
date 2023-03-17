@@ -75,9 +75,8 @@ The arclength was calculated with the assumption of 0.125cm/px for archlength.
 > DeepSort
 * https://arxiv.org/abs/1703.07402
 
-> Yolov5
-
-* https://ultralytics.com/yolov5
+> Single Shot Detection model
+* https://github.com/Qberto/arcgis-tf-roaddamagedetector/tree/master/trained_models
 
 > Detection infra
 
