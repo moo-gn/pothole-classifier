@@ -20,7 +20,6 @@ NOTE: In order to run the program with no dependency conflicts, make sure to cre
 ``$ pip3 install -r requirements``
 
 
-
 # Getting Started
 
 ## Usage
@@ -55,7 +54,7 @@ options:
 ## The Architecture
 
 The architecture of our Plothole Classifier Pipeline
-![Architecture Diagram](https://user-images.githubusercontent.com/48159946/213861748-0570330b-428e-4d0a-9c8e-6d44639102d2.png)
+![Architecture Diagram](https://user-images.githubusercontent.com/48159946/226072480-0769bceb-fccd-4252-bacf-c9e622914a3d.png)
 
 
 
